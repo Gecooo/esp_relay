@@ -42,7 +42,8 @@ const char* const uptimeArg PROGMEM = "uptime";
 const char* const relayArg PROGMEM = "relay";
 
 String ssid, password, domain;
-String mqttServer, mqttUser, mqttPassword, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/Relay", mqttTopicTempC = "/TempC", mqttTopicTempK = "/TempK";
+String mqttServer, mqttUser, mqttPassword, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/Relay", mqttTopicTempC = "/175241/publish/fields/field1/EPY2NM6967MVDEM5", mqttTopicTempK = "/175241/publish/fields/field2/EPY2NM6967MVDEM5";
+//String mqttServer, mqttUser, mqttPassword, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/Relay", mqttTopicTempC = "/TempC", mqttTopicTempK = "/TempK";
 uint16_t mqttPort = 1883;
 byte relayPin = 5;
 bool relayLevel = LOW;
@@ -830,6 +831,9 @@ void switchRelay(bool on) {
 }
 
 void serialstring() {
+  const uint32_t timeout1 = 5000;
+  static uint32_t lastTime1;
+  if (millis() > lastTime1 + timeout1) {
   if (Serial.available()) {
     String inByte = Serial.readStringUntil('\n');
     StaticJsonBuffer<200> jsonBuffer;
@@ -854,7 +858,10 @@ JsonObject& root = jsonBuffer.parseObject(inByte);
       
     }
   }
+  lastTime1 = millis();
+  }
 }
+
 
 /*
  * Main setup
