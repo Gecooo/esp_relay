@@ -3,6 +3,8 @@ void handleWiFiConfig() {
 F("<!DOCTYPE html>\n\
 <html>\n\
 <head>\n\
+<meta charset=\"windows-1251\">\n\
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
   <title>WiFi Setup</title>\n\
 </head>\n\
 <body>\n\

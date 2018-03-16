@@ -3,8 +3,9 @@ void handleRoot() {
 F("<!DOCTYPE html>\n\
 <html>\n\
 <head>\n\
-<meta charset=\""CHARSET"\">\n\
-  <title>ESP Relay</title>\n\
+<meta charset=\"windows-1251\">\n\
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
+  <title>ESP Контроль</title>\n\
    <style type=\"text/css\">\n\
     .checkbox {\n\
       vertical-align:top;\n\
@@ -52,6 +53,8 @@ F("<!DOCTYPE html>\n\
     .checkbox:checked + label:after {\n\
       left:26px;\n\
     }\n\
+    input[type=\"button\" i] {background-color: #ff9800; height:2.5em;} /* Orange */\n\
+    input[type=\"button\" i]:hover {background: #e68a00;}\n\
   </style>\n\
   <script type=\"text/javascript\">\n\
     function openUrl(url) {\n\
@@ -114,7 +117,7 @@ F("<!DOCTYPE html>\n\
 </head>\n\
 <body>\n\
   <form>\n\
-    <h3>ESP Relay</h3>\n\
+    <h3>ESP Контроль</h3>\n\
     <p>\n\
     VCC: <span id=\"");
   message += FPSTR(vccArg);
