@@ -41,13 +41,14 @@ const char* const freeheapArg PROGMEM = "freeheap";
 const char* const uptimeArg PROGMEM = "uptime";
 const char* const relayArg PROGMEM = "relay";
 const char* const channelId PROGMEM = "channelID";
+const char* const writeAPIkey PROGMEM = "writeAPIKey";
 
 
 unsigned long lastConnectionTime = 0; 
-const unsigned long postingInterval = 20L * 1000L; // Post data every 20 seconds.
+const unsigned long postingInterval = 60L * 1000L; // Post data every 20 seconds.
 
 String ssid, password, domain;
-String mqttServer, mqttUser, mqttPassword, channelID, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/175241/publish/EPY2NM6967MVDEM5", mqttTopicTempC = "/publish/EPY2NM6967MVDEM5";//, mqttTopicTempK = "/175241/publish/fields/field2/EPY2NM6967MVDEM5";
+String mqttServer, mqttUser, mqttPassword, channelID, writeAPIKey, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/175241/publish/EPY2NM6967MVDEM5", mqttTopicTempC = "/publish/EPY2NM6967MVDEM5";//, mqttTopicTempK = "/175241/publish/fields/field2/EPY2NM6967MVDEM5";
 //String mqttServer, mqttUser, mqttPassword, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/Relay", mqttTopicTempC = "/TempC", mqttTopicTempK = "/TempK";
 uint16_t mqttPort = 1883;
 byte relayPin = 5;
@@ -112,6 +113,7 @@ bool readConfig() {
   offset = readEEPROMString(offset, mqttClient);
   offset = readEEPROMString(offset, mqttTopic);
   offset = readEEPROMString(offset, channelID);
+  offset = readEEPROMString(offset, writeAPIKey);
   EEPROM.get(offset, relayPin);
   offset += sizeof(relayPin);
   EEPROM.get(offset, relayLevel);
@@ -141,6 +143,7 @@ void writeConfig() {
   offset = writeEEPROMString(offset, mqttClient);
   offset = writeEEPROMString(offset, mqttTopic);
   offset = writeEEPROMString(offset, channelID);
+  offset = writeEEPROMString(offset, writeAPIKey);
   EEPROM.put(offset, relayPin);
   offset += sizeof(relayPin);
   EEPROM.put(offset, relayLevel);
@@ -387,6 +390,7 @@ F("<!DOCTYPE html>\n\
     <input type=\"button\" value=\"MQTT Setup\" onclick=\"location.href='/mqtt';\" />\n\
     <input type=\"button\" value=\"Relay Setup\" onclick=\"location.href='/relay';\" />\n\
     <input type=\"button\" value=\"Reboot!\" onclick=\"if (confirm('Are you sure to reboot?')) location.href='/reboot';\" />\n\
+    <input type=\"button\" value=\"Update\" onclick=\"location.href='/update';\" />\n\
   </form>\n\
 </body>\n\
 </html>");
@@ -515,6 +519,15 @@ F("<!DOCTYPE html>\n\
   message += F(" value=\"");
   message += quoteEscape(channelID);
   message += F("\" />\n\
+    <br/>\n\
+    Thingspeak Channel Write API Key:<br/>\n\
+    <input type=\"password\" name=\"");
+  message += FPSTR(writeAPIkey);
+  message += F("\" maxlength=");
+  message += String(maxStrParamLength);
+  message += F(" value=\"");
+  message += quoteEscape(writeAPIKey);
+  message += F("\" />\n\
     <p>\n\
     <input type=\"submit\" value=\"Save\" />\n\
     <input type=\"hidden\" name=\"");
@@ -628,6 +641,8 @@ void handleStoreConfig() {
       mqttTopic = argValue;
       } else if (argName.equals(FPSTR(channelId))) {
       channelID = argValue;
+      } else if (argName.equals(FPSTR(writeAPIkey))) {
+      writeAPIKey = argValue;
     } else if (argName.equals(FPSTR(gpioArg))) {
       relayPin = argValue.toInt();
     } else if (argName.equals(FPSTR(levelArg))) {
@@ -849,9 +864,6 @@ void switchRelay(bool on) {
 }
 
 void serialstring() {
-//  const uint32_t timeout1 = 300000;
-//  static uint32_t lastTime1;
-  
   if (Serial.available()) {
     String inByte = Serial.readStringUntil('\n');
     StaticJsonBuffer<200> jsonBuffer;
@@ -873,14 +885,12 @@ JsonObject& root = jsonBuffer.parseObject(inByte);
   //Serial.println(msgBuffer);
   
   // Create a topic string and publish data to ThingSpeak channel feed. 
-  String topicString = "channels/" + channelID + mqttTopicTempC;
-//  topicString += mqttClient;
-//  topicString += mqttTopic;
+  String topicString = "channels/" + channelID + "/publish/" + writeAPIKey;
   length=topicString.length();
   char topicBuffer[length];
   topicString.toCharArray(topicBuffer,length+1);
  
-  //mqttClient.publish( topicBuffer, msgBuffer );
+  
   pubsubClient.publish( topicBuffer, msgBuffer);      
   lastConnectionTime = millis();
         }
@@ -888,20 +898,7 @@ JsonObject& root = jsonBuffer.parseObject(inByte);
     }
   }
 
-//void mqttpublish() {
-  
-//      String topic;//('/');
-//      topic += mqttClient;
-//      topic += mqttTopicTempC;
-//      mqtt_publish(pubsubClient, topic, String(tempC));
-//
-//     // topic = '/';
-//      topic = mqttClient;
-//      topic += mqttTopicTempK;
-//      mqtt_publish(pubsubClient, topic, String(tempK));
-// Create data string to send to ThingSpeak
 
-//}
 /*
  * Main setup
  */
