@@ -24,6 +24,7 @@ const char* const passwordArg PROGMEM = "password";
 const char* const domainArg PROGMEM = "domain";
 const char* const serverArg PROGMEM = "server";
 const char* const portArg PROGMEM = "port";
+const char* const timeArg PROGMEM = "timeMQTT";
 const char* const userArg PROGMEM = "user";
 const char* const mqttpswdArg PROGMEM = "mqttpswd";
 const char* const clientArg PROGMEM = "client";
@@ -44,8 +45,8 @@ const char* const channelId PROGMEM = "channelID";
 const char* const writeAPIkey PROGMEM = "writeAPIKey";
 
 
-unsigned long lastConnectionTime = 0; 
-const unsigned long postingInterval = 60L * 1000L; // Post data every 20 seconds.
+uint32_t lastConnectionTime = 0; 
+uint32_t postingInterval = 60L * 1000L; // Post data every 20 seconds.
 
 String ssid, password, domain;
 String mqttServer, mqttUser, mqttPassword, channelID, writeAPIKey, mqttClient = "ESP_TEMPERATURE", mqttTopic = "/175241/publish/EPY2NM6967MVDEM5", mqttTopicTempC = "/publish/EPY2NM6967MVDEM5";//, mqttTopicTempK = "/175241/publish/fields/field2/EPY2NM6967MVDEM5";
@@ -114,6 +115,8 @@ bool readConfig() {
   offset = readEEPROMString(offset, mqttTopic);
   offset = readEEPROMString(offset, channelID);
   offset = readEEPROMString(offset, writeAPIKey);
+  EEPROM.get(offset, postingInterval);
+  offset += sizeof(postingInterval);
   EEPROM.get(offset, relayPin);
   offset += sizeof(relayPin);
   EEPROM.get(offset, relayLevel);
@@ -144,6 +147,8 @@ void writeConfig() {
   offset = writeEEPROMString(offset, mqttTopic);
   offset = writeEEPROMString(offset, channelID);
   offset = writeEEPROMString(offset, writeAPIKey);
+  EEPROM.put(offset, postingInterval);
+  offset += sizeof(postingInterval);
   EEPROM.put(offset, relayPin);
   offset += sizeof(relayPin);
   EEPROM.put(offset, relayLevel);
@@ -528,6 +533,13 @@ F("<!DOCTYPE html>\n\
   message += F(" value=\"");
   message += quoteEscape(writeAPIKey);
   message += F("\" />\n\
+  <br/>\n\
+    Интервал передачи данных(мсек):<br/>\n\
+    <input type=\"text\" name=\"");
+  message += FPSTR(timeArg);
+  message += F("\" maxlength=6 value=\"");
+  message += String(postingInterval);
+  message += F("\" onchange=\"document.mqtt.reboot.value=1;\" />\n\
     <p>\n\
     <input type=\"submit\" value=\"Save\" />\n\
     <input type=\"hidden\" name=\"");
@@ -631,6 +643,8 @@ void handleStoreConfig() {
       mqttServer = argValue;
     } else if (argName.equals(FPSTR(portArg))) {
       mqttPort = argValue.toInt();
+      } else if (argName.equals(FPSTR(timeArg))) {
+      postingInterval = argValue.toInt();
     } else if (argName.equals(FPSTR(userArg))) {
       mqttUser = argValue;
     } else if (argName.equals(FPSTR(mqttpswdArg))) {
