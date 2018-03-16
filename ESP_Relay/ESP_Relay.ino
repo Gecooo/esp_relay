@@ -56,7 +56,7 @@ byte relayPin = 5;
 bool relayLevel = LOW;
 bool relayOnBoot = false;
 
-long times;
+uint32_t times = 1635465468;
 float tempK;                   // достаем температуру из структуры main
 float tempC;
 
@@ -394,7 +394,7 @@ F("<!DOCTYPE html>\n\
     <input type=\"button\" value=\"WiFi Setup\" onclick=\"location.href='/wifi';\" />\n\
     <input type=\"button\" value=\"MQTT Setup\" onclick=\"location.href='/mqtt';\" />\n\
     <input type=\"button\" value=\"Relay Setup\" onclick=\"location.href='/relay';\" />\n\
-    <input type=\"button\" value=\"Reboot!\" onclick=\"if (confirm('Are you sure to reboot?')) location.href='/reboot';\" />\n\
+    <input type=\"button\" value=\"Reboot!\" onclick=\"if (confirm('Вы уверены, что хотите перезагрузить?')) location.href='/reboot';\" />\n\
     <input type=\"button\" value=\"Update\" onclick=\"location.href='/update';\" />\n\
   </form>\n\
 </body>\n\
@@ -677,12 +677,12 @@ F("<!DOCTYPE html>\n\
   <meta http-equiv=\"refresh\" content=\"5; /index.html\">\n\
 </head>\n\
 <body>\n\
-  Configuration stored successfully.\n");
+  Конфигурация сохранена успешно.\n");
   if (httpServer.arg(rebootArg) == "1")
     message += F("  <br/>\n\
-  <i>You must reboot module to apply new configuration!</i>\n");
+  <i>Вы должны перезагрузить модуль, чтобы применить новую конфигурацию!</i>\n");
   message += F("  <p>\n\
-  Wait for 5 sec. or click <a href=\"/index.html\">this</a> to return to main page.\n\
+  Ожидайте 5 sec. или нажмите <a href=\"/index.html\">здесь</a> чтобы вернуться на главную страницу.\n\
 </body>\n\
 </html>");
 
@@ -883,16 +883,17 @@ void serialstring() {
     StaticJsonBuffer<200> jsonBuffer;
 JsonObject& root = jsonBuffer.parseObject(inByte);
    
-  String sensor = root["sensor"];                           // достаем имя, 
+  String sensor = root["sensor"];             // достаем имя, 
  
   times = root["time"];
+  //times = 123546879;
   tempK = root["data"][0];                   // достаем температуру из структуры main
-  tempC = root["data"][1];                         // переводим кельвины в цельси
+  tempC = root["data"][1];                   // переводим кельвины в цельси
 
   if (mqttServer.length() && pubsubClient.connected()) {
     if (millis() - lastConnectionTime > postingInterval) 
   {
-      String data = String("field1=" + String(tempC,0) + "&field2=" + String(tempK,0));
+      String data = String("field1=" + String(tempC,0) + "&field2=" + String(tempK,0) + "&field3=" + times);
   int length = data.length();
   char msgBuffer[length];
   data.toCharArray(msgBuffer,length+1);
